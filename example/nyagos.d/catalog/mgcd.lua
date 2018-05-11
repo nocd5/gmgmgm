@@ -21,12 +21,12 @@ nyagos.alias.cd = function(args)
       if #dirs == 0 then
         print(pattern .. ': No such directory')
       elseif #dirs == 1 then
-        target = {dirs[1]}
+        target = {dirs[1]:gsub('/$', ''):gsub('@ %->.*', '')}
       else
         local d = nyagos.box(dirs)
         print()
         if #d > 0 then
-          target = {d}
+          target = {d:gsub('/$', ''):gsub('@ %->.*', '')}
         end
       end
     end
@@ -42,12 +42,14 @@ getDirs = function(parent, pattern)
       parent = nyagos.getwd():gsub('[\\/].*', '') .. parent
     end
   end
-  local line = nyagos.eval('ls -la ' .. parent) -- `ls` which is embedded in nyagos
+  local line = nyagos.eval('ls -laL ' .. parent) -- `ls` which is embedded in nyagos
   local complst = {}
   for i, e in ipairs(split(line, '[\r\n]')) do
-    local t = tostring(e:gsub('.-%s+', '', 5))
-    if t ~= './' and t ~= '../' then
-      table.insert(complst, '"' .. t .. '"')
+    if e:sub(1,1) == 'd' then
+      local t = tostring(e:gsub('.-%s+', '', 5))
+      if t ~= './' and t ~= '../' then
+        table.insert(complst, '"' .. t .. '"')
+      end
     end
   end
 
@@ -66,9 +68,7 @@ getDirs = function(parent, pattern)
       lst[j] = complst[j + (i-1)]
     end
     for _,e in pairs(split(nyagos.eval('gmgmgm -f ' .. opt .. pattern .. ' ' .. table.concat(lst, ' ')), '[\r\n]')) do
-      if e:match('.*/$') then
-        table.insert(dirs, #dirs+1, parent .. e:gsub('/$', ''))
-      end
+      table.insert(dirs, #dirs+1, parent .. e)
     end
   end
   return dirs
