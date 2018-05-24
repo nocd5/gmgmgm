@@ -18,18 +18,7 @@ var (
 	forwardMatchOpt = flag.Bool("f", false, "forward match")
 )
 
-func main() {
-	flag.Parse()
-	a := flag.Args()
-
-	if len(a) < 2 {
-		fmt.Fprintf(os.Stderr, "Invalid argments\n")
-		return
-	}
-
-	pat := a[0]
-	src := a[1:]
-
+func match(pat string, src []string, i bool, f bool) []string {
 	// Load embedded dictionary.
 	d, err := embedict.Load()
 	if err != nil {
@@ -41,12 +30,13 @@ func main() {
 		panic(err)
 	}
 
-	if *forwardMatchOpt {
+	if f {
 		p = "^" + p
 	}
-	if *ignoreCaseOpt {
+	if i {
 		p = "(?i)" + p
 	}
+
 	re, err := regexp.Compile(p)
 	if err != nil {
 		panic(err)
@@ -81,5 +71,22 @@ func main() {
 
 	wg.Wait()
 	sort.Strings(l)
+	return l
+}
+
+func main() {
+	flag.Parse()
+	a := flag.Args()
+
+	if len(a) < 2 {
+		fmt.Fprintf(os.Stderr, "Invalid argments\n")
+		return
+	}
+
+	pat := a[0]
+	src := a[1:]
+
+	l := match(pat, src, *ignoreCaseOpt, *forwardMatchOpt)
+
 	fmt.Println(strings.Join(l, "\n"))
 }
