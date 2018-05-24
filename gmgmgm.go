@@ -1,24 +1,15 @@
-package main
+package gmgmgm
 
 import (
-	"flag"
-	"fmt"
 	"github.com/koron/gomigemo/embedict"
 	"github.com/koron/gomigemo/migemo"
-	"os"
 	"regexp"
 	"runtime"
 	"sort"
-	"strings"
 	"sync"
 )
 
-var (
-	ignoreCaseOpt   = flag.Bool("i", false, "ignore case")
-	forwardMatchOpt = flag.Bool("f", false, "forward match")
-)
-
-func match(pat string, src []string, i bool, f bool) []string {
+func Match(pat string, src []string, i bool, f bool) []string {
 	// Load embedded dictionary.
 	d, err := embedict.Load()
 	if err != nil {
@@ -72,21 +63,4 @@ func match(pat string, src []string, i bool, f bool) []string {
 	wg.Wait()
 	sort.Strings(l)
 	return l
-}
-
-func main() {
-	flag.Parse()
-	a := flag.Args()
-
-	if len(a) < 2 {
-		fmt.Fprintf(os.Stderr, "Invalid argments\n")
-		return
-	}
-
-	pat := a[0]
-	src := a[1:]
-
-	l := match(pat, src, *ignoreCaseOpt, *forwardMatchOpt)
-
-	fmt.Println(strings.Join(l, "\n"))
 }
